@@ -1,22 +1,23 @@
 terraform {
-  source = "github.com/yegorovev/tf_aws_launch_template.git"
+  source = "git@github.com:yegorovev/tf_aws_launch_template.git?ref=v1.0.1"
 }
 
 
 locals {
-  common  = read_terragrunt_config(find_in_parent_folders("common.hcl")).inputs.common
-  env     = local.common.env
-  profile = local.common.profile
-  region  = local.common.region
+  parameters_file = get_env("TG_PARAMS_FILE", "common_default.hcl")
+  common          = read_terragrunt_config(find_in_parent_folders(local.parameters_file)).inputs.common
+  env             = local.common.env
+  profile         = local.common.profile
+  region          = local.common.region
 
   common_tags = jsonencode(local.common.tags)
 
-  net                     = read_terragrunt_config(find_in_parent_folders("common.hcl")).inputs.net
+  net                     = read_terragrunt_config(find_in_parent_folders(local.parameters_file)).inputs.net
   net_backet_remote_state = local.net.net_backet_remote_state
   net_key_remote_state    = local.net.net_key_remote_state
   net_remote_state_region = local.net.net_remote_state_region
 
-  launch_template            = read_terragrunt_config(find_in_parent_folders("common.hcl")).inputs.launch_template
+  launch_template            = read_terragrunt_config(find_in_parent_folders(local.parameters_file)).inputs.launch_template
   lt_lock_table_remote_state = local.launch_template.lt_lock_table_remote_state
   lt_key_remote_state        = local.launch_template.lt_key_remote_state
   lt_backet_remote_state     = local.launch_template.lt_backet_remote_state
@@ -26,6 +27,7 @@ locals {
   lt_launch_template_name    = local.launch_template.lt_launch_template_name
   lt_key_name                = try(local.launch_template.lt_key_name, "")
   lt_vpc_security_groups     = local.launch_template.lt_vpc_security_groups
+  lt_cloudinit_content       = local.launch_template.lt_cloudinit_content
 }
 
 remote_state {
@@ -72,4 +74,5 @@ inputs = {
   lt_launch_template_name = local.lt_launch_template_name
   lt_key_name             = local.lt_key_name
   lt_vpc_security_groups  = local.lt_vpc_security_groups
+  lt_cloudinit_content    = local.lt_cloudinit_content
 }
